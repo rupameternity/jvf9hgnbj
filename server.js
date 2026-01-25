@@ -2,47 +2,27 @@ const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const app = express();
 
-
+// --- SERVER KEEPALIVE ---
 const port = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-    res.send('Bot is Active on Render! 🟢');
-});
-
-// '0.0.0.0' zaroori hai Render ke liye
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on port ${port}`);
-});
+app.get('/', (req, res) => { res.send('Bot is Running in PROTECTED MODE! 🛡️'); });
+app.listen(port, '0.0.0.0', () => { console.log(`Server running on port ${port}`); });
 
 // --- BOT SETUP ---
 const token = process.env.BOT_TOKEN;
-if (!token) {
-    console.error("❌ ERROR: BOT_TOKEN nahi mila! Environment Variables check karo.");
-    process.exit(1);
-}
+if (!token) { console.error("❌ ERROR: BOT_TOKEN missing!"); process.exit(1); }
 const bot = new TelegramBot(token, { polling: true });
 
 // --- CONFIGURATION ---
-const adminIds = [
-    7096965198, 
-    6429023830,
-    8000227591,
-    8487113041,
-    6005670247,
-    7916211456,
-    8076555425,
-    5248658367,
-    8514126036,
-    7476658546,
-    6308953872,
-    7409280726,
-    6868586610,
-    6463420275,
-    5078407286
-];
-
-
+const adminIds = [ 7096965198, 6429023830, 8000227591 ];
 const ownerId = 7096965198; 
+
+// 🔴 CHANGE THIS (Line 21) 🔴
+// Replace these numbers with your real Group IDs.
+// You can add more than 2 if you want.
+const allowedGroups = [
+    -1001234567890, 
+    -1009876543210
+];
 
 // --- VARIABLES ---
 let listActive = false;
@@ -58,11 +38,35 @@ const escapeHtml = (unsafe) => {
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 };
 
-// --- ⚡ FAST UPDATER (0.8s) ---
+// --- 🛡️ SECURITY GUARD FUNCTION ---
+const checkGroupPermission = async (msg) => {
+    const chatId = msg.chat.id;
+    const chatType = msg.chat.type;
+
+    // 1. Block Private Messages (DMs) - Except Owner
+    if (chatType === 'private') {
+        if (msg.from.id !== ownerId) return false; 
+        return true;
+    }
+
+    // 2. Block Unauthorized Groups
+    if (chatType === 'group' || chatType === 'supergroup') {
+        if (!allowedGroups.includes(chatId)) {
+            // Leave silently or warn
+            try {
+                await bot.sendMessage(chatId, "❌ **Access Denied:** I am not allowed in this group.");
+                await bot.leaveChat(chatId);
+            } catch (e) {}
+            return false;
+        }
+    }
+    return true; 
+};
+
+// --- ⚡ FAST UPDATER ---
 const scheduleListUpdate = () => {
     if (!listActive) return;
     if (updateTimer) clearTimeout(updateTimer);
-    
     updateTimer = setTimeout(async () => {
         if (!listActive) return;
         try {
@@ -72,14 +76,12 @@ const scheduleListUpdate = () => {
                 parse_mode: 'HTML',
                 reply_markup: generateKeyboard()
             });
-        } catch (e) {
-            // Ignore small errors
-        }
+        } catch (e) {}
     }, 800); 
 };
 
 const generateListText = () => {
-    let text = ` <b>${escapeHtml(listTitle)}</b>\n\n`;
+    let text = `📋 <b>${escapeHtml(listTitle)}</b>\n\n`;
     if (listData.length === 0) text += "Waiting for names...\n<i>(Type 'addlist Name' to join)</i>";
     else {
         listData.forEach((item, index) => {
@@ -98,9 +100,12 @@ const generateKeyboard = () => {
 };
 
 // ==========================================
-// 🔴 STRICT COMMAND: /startlist
+// 🔴 COMMAND: /startlist
 // ==========================================
 bot.onText(/\/startlist(?:\s+(.+))?/, async (msg, match) => {
+    // 🛡️ Security Check
+    if (!(await checkGroupPermission(msg))) return;
+
     if (Date.now() / 1000 - msg.date > 30) return;
     if (!isAdmin(msg.from.id)) return; 
 
@@ -116,22 +121,23 @@ bot.onText(/\/startlist(?:\s+(.+))?/, async (msg, match) => {
     const s = await bot.sendMessage(listChatId, generateListText(), { parse_mode: 'HTML', reply_markup: generateKeyboard() });
     listMessageId = s.message_id;
 
-    // Fast Pin (Background)
     bot.pinChatMessage(listChatId, listMessageId).catch(e => {});
 });
 
 // ==========================================
-// 🔴 STRICT COMMAND: /endlist
+// 🔴 COMMAND: /endlist
 // ==========================================
 bot.onText(/\/endlist/, async (msg, match) => {
+    // 🛡️ Security Check
+    if (!(await checkGroupPermission(msg))) return;
+
     if (Date.now() / 1000 - msg.date > 30) return;
     if (!isAdmin(msg.from.id)) return;
     if (!listActive) return bot.sendMessage(msg.chat.id, "No active session to stop.");
 
-    // 1. Report Generate
+    // Report
     const time = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
     let report = `📊 **Session Report**\n📅 Date: ${time}\n📝 Title: ${listTitle}\n\n`;
-    
     if (listData.length === 0) report += "No participants.";
     else {
         listData.forEach((u, i) => {
@@ -139,15 +145,12 @@ bot.onText(/\/endlist/, async (msg, match) => {
             report += `${i + 1}. ${u.name} | ${username} | ID: ${u.userId}\n`;
         });
     }
-
-    // Fast Report Send
     bot.sendMessage(ownerId, report).catch(e => {});
 
-    // 2. Close Session
+    // Stop
     listActive = false; 
     if (updateTimer) clearTimeout(updateTimer); 
 
-    // Fast Unpin
     bot.unpinChatMessage(listChatId, { message_id: listMessageId }).catch(() => {
         bot.unpinChatMessage(listChatId).catch(() => {});
     });
@@ -163,9 +166,15 @@ bot.onText(/\/endlist/, async (msg, match) => {
 });
 
 // ==========================================
-// 🟢 MEMBER ACTION: addlist
+// 🟢 COMMAND: addlist
 // ==========================================
 bot.on('message', async (msg) => {
+    // 🛡️ Silent Security Check (No warning, just ignore)
+    const chatId = msg.chat.id;
+    const chatType = msg.chat.type;
+    if ((chatType === 'group' || chatType === 'supergroup') && !allowedGroups.includes(chatId)) return;
+    if (chatType === 'private') return;
+
     if (!listActive || !msg.text) return;
     if (Date.now() / 1000 - msg.date > 30) return; 
     
@@ -183,7 +192,7 @@ bot.on('message', async (msg) => {
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     } else {
         if (listData.find(u => u.userId === userId)) {
-            return bot.sendMessage(msg.chat.id, "you are already in the queue", { reply_to_message_id: msg.message_id });
+            return bot.sendMessage(msg.chat.id, "❌ You are already added!", { reply_to_message_id: msg.message_id });
         }
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     }
@@ -192,10 +201,10 @@ bot.on('message', async (msg) => {
 });
 
 // ==========================================
-// 🟢 ADMIN ACTION: Tick
+// 🟢 BUTTON ACTION
 // ==========================================
 bot.on('callback_query', async (q) => {
-    if (!listActive) return bot.answerCallbackQuery(q.id, { text: "Only Host!", show_alert: true });
+    if (!listActive) return bot.answerCallbackQuery(q.id, { text: "Closed!", show_alert: true });
     if (!isAdmin(q.from.id)) return bot.answerCallbackQuery(q.id, { text: "Admins Only!", show_alert: true });
 
     if (q.data.startsWith('tick_')) {
@@ -211,4 +220,18 @@ bot.on('callback_query', async (q) => {
     }
 });
 
-bot.on('polling_error', (error) => {});
+// --- 🔍 ID FINDER (Check logs when you add bot to group) ---
+bot.on('my_chat_member', async (msg) => {
+    if (msg.new_chat_member.status === 'member' || msg.new_chat_member.status === 'administrator') {
+        const chatId = msg.chat.id;
+        const chatName = msg.chat.title;
+        
+        // This will print the Group ID in your Render/Replit Logs
+        console.log(`✅ BOT JOINED NEW GROUP: ${chatName} | ID: ${chatId}`); 
+
+        if (!allowedGroups.includes(chatId)) {
+            await bot.sendMessage(chatId, "❌ **Access Denied:** I am not allowed in this group.");
+            await bot.leaveChat(chatId);
+        }
+    }
+});
