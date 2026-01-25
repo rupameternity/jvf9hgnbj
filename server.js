@@ -2,8 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const app = express();
 
-// --- RENDER KEEPALIVE & PORT SETTINGS ---
-// Render automatically ek PORT assign karta hai, hume wahi use karna hai
+
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
@@ -42,7 +41,7 @@ const adminIds = [
     5078407286
 ];
 
-// ⚠️ APNI OWNER ID YAHAN DAAL
+
 const ownerId = 7096965198; 
 
 // --- VARIABLES ---
