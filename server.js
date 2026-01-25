@@ -13,7 +13,7 @@ if (!token) { console.error("❌ ERROR: BOT_TOKEN missing!"); process.exit(1); }
 const bot = new TelegramBot(token, { polling: true });
 
 // --- CONFIGURATION ---
-const adminIds = [ 7096965198, 6429023830, 8000227591 ];
+const adminIds = [ 7096965198, 6429023830, 8000227591, 7292074890, 8487113041, 6005670247, 7916211456, 8076555425, 5248658367, 8514126036, 7476658546, 6308953872, 7409280726, 6868586610, 6463420275, 5078407286];
 const ownerId = 7096965198; 
 
 // 🔴 CHANGE THIS (Line 21) 🔴
