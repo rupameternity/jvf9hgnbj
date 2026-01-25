@@ -79,7 +79,7 @@ const scheduleListUpdate = () => {
 };
 
 const generateListText = () => {
-    let text = `📋 <b>${escapeHtml(listTitle)}</b>\n\n`;
+    let text = ` <b>${escapeHtml(listTitle)}</b>\n\n`;
     if (listData.length === 0) text += "Waiting for names...\n<i>(Type 'addlist Name' to join)</i>";
     else {
         listData.forEach((item, index) => {
