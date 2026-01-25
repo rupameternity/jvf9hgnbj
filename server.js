@@ -183,7 +183,7 @@ bot.on('message', async (msg) => {
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     } else {
         if (listData.find(u => u.userId === userId)) {
-            return bot.sendMessage(msg.chat.id, "❌ You are already added!", { reply_to_message_id: msg.message_id });
+            return bot.sendMessage(msg.chat.id, "you are already is the queue", { reply_to_message_id: msg.message_id });
         }
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     }
@@ -195,7 +195,7 @@ bot.on('message', async (msg) => {
 // 🟢 ADMIN ACTION: Tick
 // ==========================================
 bot.on('callback_query', async (q) => {
-    if (!listActive) return bot.answerCallbackQuery(q.id, { text: "Closed!", show_alert: true });
+    if (!listActive) return bot.answerCallbackQuery(q.id, { text: "Only Host!", show_alert: true });
     if (!isAdmin(q.from.id)) return bot.answerCallbackQuery(q.id, { text: "Admins Only!", show_alert: true });
 
     if (q.data.startsWith('tick_')) {
