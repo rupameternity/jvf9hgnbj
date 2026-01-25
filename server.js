@@ -81,7 +81,7 @@ const scheduleListUpdate = () => {
 };
 
 const generateListText = () => {
-    let text = `📋 <b>${escapeHtml(listTitle)}</b>\n\n`;
+    let text = ` <b>${escapeHtml(listTitle)}</b>\n\n`;
     if (listData.length === 0) text += "Waiting for names...\n<i>(Type 'addlist Name' to join)</i>";
     else {
         listData.forEach((item, index) => {
@@ -192,7 +192,7 @@ bot.on('message', async (msg) => {
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     } else {
         if (listData.find(u => u.userId === userId)) {
-            return bot.sendMessage(msg.chat.id, "❌ You are already added!", { reply_to_message_id: msg.message_id });
+            return bot.sendMessage(msg.chat.id, "You are already in the queue", { reply_to_message_id: msg.message_id });
         }
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     }
