@@ -183,7 +183,7 @@ bot.on('message', async (msg) => {
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     } else {
         if (listData.find(u => u.userId === userId)) {
-            return bot.sendMessage(msg.chat.id, "you are already is the queue", { reply_to_message_id: msg.message_id });
+            return bot.sendMessage(msg.chat.id, "you are already in the queue", { reply_to_message_id: msg.message_id });
         }
         listData.push({ name, userId, username, ticked: false, timestamp: Date.now() });
     }
