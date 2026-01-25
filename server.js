@@ -20,8 +20,8 @@ const ownerId = 7096965198;
 // Replace these numbers with your real Group IDs.
 // You can add more than 2 if you want.
 const allowedGroups = [
-    -1001234567890, 
-    -1009876543210
+    -2562222456, 
+    -2693902733
 ];
 
 // --- VARIABLES ---
