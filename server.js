@@ -235,3 +235,17 @@ bot.on('my_chat_member', async (msg) => {
         }
     }
 });
+// --- CRASH HANDLER (Isse bot band nahi hoga) ---
+bot.on('polling_error', (error) => {
+    // Ye error ko chup-chap console mein dikhayega par bot band nahi hone dega
+    console.log(`[Polling Error] ${error.code || 'Unknown'}: ${error.message}`);
+});
+
+bot.on('webhook_error', (error) => {
+    console.log(`[Webhook Error] ${error.code}: ${error.message}`);
+});
+
+// Process ko marne se bachana
+process.on('uncaughtException', (err) => {
+    console.log('Uncaught Exception:', err.message);
+});
