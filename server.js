@@ -98,7 +98,40 @@ const generateKeyboard = () => {
     const next = listData.find(item => !item.ticked);
     return next ? { inline_keyboard: [[{ text: `Tick ${next.name}`, callback_data: `tick_${next.userId}_${next.timestamp}` }]] } : { inline_keyboard: [] };
 };
+// ==========================================
+// 🕶️ PRO OWNER COMMANDS (Sudo Mode)
+// ==========================================
 
+// 1. Command: /ten login
+bot.onText(/\/ten login/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return; 
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "sudo ten detected", { 
+        reply_to_message_id: msg.message_id 
+    });
+});
+
+// 2. Command: /ten logsend
+bot.onText(/\/ten logsend/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return;
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "log sent", { 
+        reply_to_message_id: msg.message_id 
+    });
+});
+bot.onText(/\/updateai/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return;
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "updated tenai-aries.1b.", { 
+        reply_to_message_id: msg.message_id 
+    });
+});
 // ==========================================
 // 🔴 COMMAND: /startlist
 // ==========================================
