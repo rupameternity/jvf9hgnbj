@@ -128,8 +128,35 @@ bot.onText(/\/updateai/, async (msg) => {
     if (msg.from.id !== ownerId) return;
 
     // Bot replies
-    await bot.sendMessage(msg.chat.id, "updated tenai-aries.1b.", { 
+    await bot.sendMessage(msg.chat.id, "updated tenai:aries.1b", { 
         reply_to_message_id: msg.message_id 
+    });
+});
+bot.onText(/\who are you/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return; 
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "im an Ai chatbot made by and for ECC. i can create quizes, play games, list names and all. feel free to ask for help.", { 
+        reply_to_message_id: msg.message_id 
+    });
+});
+bot.onText(/\model/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return; 
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "sec 3 from tenai:aries.1b", { 
+        reply_to_message_id: msg.message_id 
+    });
+});
+bot.onText(/\/ten logout/, async (msg) => {
+    // Only Owner can use this
+    if (msg.from.id !== ownerId) return; 
+
+    // Bot replies
+    await bot.sendMessage(msg.chat.id, "logged out", { 
+        reply_to_message_id: msg.message_id
     });
 });
 // ==========================================
